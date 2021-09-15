@@ -115,7 +115,7 @@ uni_sw <- data.frame(word = c("com", "imgur", "gallery", "lol", "just", "like", 
                               "lhgoogleusercontentcom", "https", "wwwreddit", "http", "wwwredditcom", "yeah", 
                               "also", "imgurcom", "message", "reacted", "dont", "youre", "ill", "can", 
                               "thats", "get", "â", "ã", "googleusercontent.com", "lh3", "s0", "å", "imgur.com", 
-                              "pã", "www.bonappetit.com", "xdã", "xdâ", "xd", "www.reddit.com"))
+                              "pã", "www.bonappetit.com", "xdã", "xdâ", "xd", "www.reddit.com", "pete"))
 
 tokens_clean <- tokens_clean %>% 
   anti_join(uni_sw, by = "word")
@@ -129,5 +129,5 @@ pal <- brewer.pal(8,"Dark2")
 #dev.new(width = 1000, height = 1000, unit = "px")
 set.seed(1234)
 tokens_clean %>% 
-  with(wordcloud(word, n, colors=pal, min.freq = 1, scale = c(4,0.1),
+  with(wordcloud(word, n, colors=pal, min.freq = 1, scale = c(2.5,0.8),
                  max.words=200, random.order=FALSE, rot.per=0.0,))
