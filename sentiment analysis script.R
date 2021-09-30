@@ -1,4 +1,4 @@
-# Tidy wordcloud parsing script
+## Sentiment Analysis
 
 library(tidytext)
 library(readr)
@@ -11,7 +11,9 @@ library(dplyr)
 library(tidytext)
 library(DT)
 library(stringr)
-
+library(sentimentr)
+library(ggplot2)
+library(tidyquant)
 
 path <- "C://Users//cantilk//Documents//Wordcloud Project//"
 text1 <- readLines(paste(path, "Hanna Lin - 1.txt", sep=""))
@@ -88,53 +90,19 @@ for (i in 1:nrow(text5)){
   }
 }
 
+sentences <- get_sentences(hanna_rows)
+sentiment_table <- sentiment(sentences, by=NULL)
+average_sentiment <- mean(sentiment_table$sentiment)
+sentiment_dataframe <- data.frame(index=1:76131, sentiment=sentiment_table$sentiment)
+sentiment_over_time <- ggplot(data=sentiment_dataframe, aes(x=index, y=sentiment, group=1))+
+  geom_smooth(method="auto", se=TRUE, fullrange=FALSE, level=0.95)
+sentiment_over_time
+
+# Print plots to a pdf file
+pdf("C://Users//cantilk//Documents//Wordcloud Project//sentiment_over_time.pdf")
+print(sentiment_over_time)
+dev.off() 
 
 
-write_lines(hanna_rows, paste(path, "hanna_lines.txt", sep=""),sep = "\n", append = FALSE)
-dat <- read.table(paste(path, "hanna_lines.txt", sep=""), header = FALSE, fill = TRUE)
-tidy_dat <- tidyr::gather(dat, key, word)
-gc()
 
-# tokenize
-tokens <- tidy_dat %>% 
-  unnest_tokens(word, word) %>% 
-  dplyr::count(word, sort = TRUE) %>% 
-  ungroup()
 
-# remove stop words
-data("stop_words")
-tokens_clean <- tokens %>%
-  anti_join(stop_words)
-
-# remove numbers
-nums <- tokens_clean %>% filter(str_detect(word, "^[0-9]")) %>% select(word) %>% unique()
-
-tokens_clean <- tokens_clean %>% 
-  anti_join(nums, by = "word")
-
-# remove unique stop words that snuck in there
-uni_sw <- data.frame(word = c("com", "imgur", "gallery", "lol", "just", "like", "okay", "ok", 
-                              "lhgoogleusercontentcom", "https", "wwwreddit", "http", "wwwredditcom", "yeah", 
-                              "also", "imgurcom", "message", "reacted", "dont", "youre", "ill", "can", 
-                              "thats", "get", "â", "ã", "googleusercontent.com", "lh3", "s0", "å", "imgur.com", 
-                              "pã", "www.bonappetit.com", "xdã", "xdâ", "xd", "www.reddit.com", "pete", "joe", 
-                              "dane", "hanna", "ren", "keiran", "âÿâ", "xddd", "t___t", "t__t", "xdddd", "bae", 
-                              "ren's", "haha", "hahaha", "lolol", "lmao", "lololol","dan", "loool", "lool"))
-
-tokens_clean <- tokens_clean %>% 
-  anti_join(uni_sw, by = "word")
-
-tokens_clean %>% head(10)
-
-# define a nice color palette
-pal <- brewer.pal(8,"Dark2")
-
-# plot the 50 most common words
-dev.new(width = 1000, height = 1000, unit = "px")
-set.seed(1234)
-tokens_clean %>% 
-  with(wordcloud(word, n, colors=pal, min.freq = 1, scale = c(2.5,0.8),
-                 max.words=200, random.order=FALSE, rot.per=0.0,))
-
-#tokens_clean %>%
-#  DT::datatable()
